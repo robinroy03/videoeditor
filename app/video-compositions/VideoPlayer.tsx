@@ -7,6 +7,21 @@ type TimelineCompositionProps = {
     timelineData: TimelineDataItem[];
 }
 
+// Helper function to convert API URLs to internal backend URLs for server-side rendering
+const getMediaSrc = (remoteUrl?: string, localUrl?: string) => {
+    if (remoteUrl && remoteUrl.startsWith('/api/media/')) {
+        // Convert /api/media/filename to http://localhost:8000/media/filename for server-side rendering
+        const internalUrl = `http://localhost:8000${remoteUrl.replace('/api', '')}`;
+        console.log(`Converting ${remoteUrl} to ${internalUrl} for server-side rendering`);
+        return internalUrl;
+    }
+    if (localUrl && localUrl.startsWith('blob:')) {
+        console.warn(`Cannot use blob URL for server-side rendering: ${localUrl}`);
+        console.warn(`Remote URL should be used instead: ${remoteUrl}`);
+    }
+    return remoteUrl || localUrl!;
+};
+
 export function TimelineComposition({ timelineData }: TimelineCompositionProps) {
     console.log('Timeline Data => ', JSON.stringify(timelineData, null, 2));
     // for this experiment it is all text that we are working with.
@@ -42,8 +57,7 @@ export function TimelineComposition({ timelineData }: TimelineCompositionProps) 
                     break;
                 case 'image':
                     if (scrubber.mediaUrlLocal || scrubber.mediaUrlRemote) {
-                        // Use local file path for server-side rendering, remote for client
-                        const mediaSrc = scrubber.mediaUrlLocal || scrubber.mediaUrlRemote!;
+                        const mediaSrc = getMediaSrc(scrubber.mediaUrlRemote, scrubber.mediaUrlLocal);
                         content = (
                             <AbsoluteFill>
                                 <Img src={mediaSrc} />
@@ -53,8 +67,7 @@ export function TimelineComposition({ timelineData }: TimelineCompositionProps) 
                     break;
                 case 'video':
                     if (scrubber.mediaUrlLocal || scrubber.mediaUrlRemote) {
-                        // Use local file path for server-side rendering, remote for client
-                        const mediaSrc = scrubber.mediaUrlLocal || scrubber.mediaUrlRemote!;
+                        const mediaSrc = getMediaSrc(scrubber.mediaUrlRemote, scrubber.mediaUrlLocal);
                         content = (
                             <AbsoluteFill>
                                 <Video src={mediaSrc} />
