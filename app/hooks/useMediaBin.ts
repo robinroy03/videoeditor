@@ -125,6 +125,7 @@ export const useMediaBin = () => {
       mediaType: "text",
       media_width: null, // text got no dimensions
       media_height: null,
+      durationInSeconds: undefined, // text has no duration
     };
     setMediaBinItems(prev => [...prev, newItem]);
   }, []);

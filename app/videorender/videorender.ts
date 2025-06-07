@@ -95,6 +95,23 @@ app.get('/media/:filename', (req: Request, res: Response): void => {
       return;
     }
     
+    // Set appropriate headers for media files
+    if (filename.endsWith('.mp4')) {
+      res.set('Content-Type', 'video/mp4');
+    } else if (filename.endsWith('.webm')) {
+      res.set('Content-Type', 'video/webm');
+    } else if (filename.endsWith('.mov')) {
+      res.set('Content-Type', 'video/quicktime');
+    } else if (filename.endsWith('.avi')) {
+      res.set('Content-Type', 'video/x-msvideo');
+    } else if (filename.endsWith('.jpg') || filename.endsWith('.jpeg')) {
+      res.set('Content-Type', 'image/jpeg');
+    } else if (filename.endsWith('.png')) {
+      res.set('Content-Type', 'image/png');
+    } else if (filename.endsWith('.gif')) {
+      res.set('Content-Type', 'image/gif');
+    }
+    
     // Send the file
     res.sendFile(filePath);
   } catch (error) {
@@ -140,8 +157,8 @@ app.post('/upload', upload.single('media'), (req: Request, res: Response): void 
     }
 
     const fileUrl = `/api/media/${encodeURIComponent(req.file.filename)}`;
-    const fullUrl = fileUrl; // Use relative URL for nginx proxy
-
+    const internalUrl = `/media/${encodeURIComponent(req.file.filename)}`;
+    
     console.log(`📁 File uploaded: ${req.file.originalname} -> ${req.file.filename}`);
 
     res.json({
@@ -149,7 +166,8 @@ app.post('/upload', upload.single('media'), (req: Request, res: Response): void 
       filename: req.file.filename,
       originalName: req.file.originalname,
       url: fileUrl,
-      fullUrl: fullUrl,
+      fullUrl: fileUrl,
+      internalUrl: internalUrl, // For server-side rendering
       size: req.file.size,
       path: req.file.path
     });

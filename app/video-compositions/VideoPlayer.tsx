@@ -42,18 +42,22 @@ export function TimelineComposition({ timelineData }: TimelineCompositionProps) 
                     break;
                 case 'image':
                     if (scrubber.mediaUrlLocal || scrubber.mediaUrlRemote) {
+                        // Use local file path for server-side rendering, remote for client
+                        const mediaSrc = scrubber.mediaUrlLocal || scrubber.mediaUrlRemote!;
                         content = (
                             <AbsoluteFill>
-                                <Img src={scrubber.mediaUrlRemote || scrubber.mediaUrlLocal!} />
+                                <Img src={mediaSrc} />
                             </AbsoluteFill>
                         );
                     }
                     break;
                 case 'video':
                     if (scrubber.mediaUrlLocal || scrubber.mediaUrlRemote) {
+                        // Use local file path for server-side rendering, remote for client
+                        const mediaSrc = scrubber.mediaUrlLocal || scrubber.mediaUrlRemote!;
                         content = (
                             <AbsoluteFill>
-                                <Video src={scrubber.mediaUrlRemote || scrubber.mediaUrlLocal!} />
+                                <Video src={mediaSrc} />
                             </AbsoluteFill>
                         );
                     }
