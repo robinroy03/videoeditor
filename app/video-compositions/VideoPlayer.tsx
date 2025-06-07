@@ -9,17 +9,24 @@ type TimelineCompositionProps = {
 
 // Helper function to convert API URLs to internal backend URLs for server-side rendering
 const getMediaSrc = (remoteUrl?: string, localUrl?: string) => {
-    if (remoteUrl && remoteUrl.startsWith('/api/media/')) {
-        // Convert /api/media/filename to http://localhost:8000/media/filename for server-side rendering
-        const internalUrl = `http://localhost:8000${remoteUrl.replace('/api', '')}`;
-        console.log(`Converting ${remoteUrl} to ${internalUrl} for server-side rendering`);
-        return internalUrl;
+    // Check if we're running server-side (during video rendering)
+    if (typeof window === 'undefined') {
+        // Server-side: Convert nginx proxy URLs to direct backend URLs
+        if (remoteUrl && remoteUrl.startsWith('/api/media/')) {
+            const internalUrl = `http://localhost:8000${remoteUrl.replace('/api', '')}`;
+            console.log(`Server-side rendering: Converting ${remoteUrl} to ${internalUrl}`);
+            return internalUrl;
+        }
+        if (localUrl && localUrl.startsWith('blob:')) {
+            console.warn(`Server-side: Cannot use blob URL: ${localUrl}`);
+            console.warn(`Using remote URL instead: ${remoteUrl}`);
+        }
+        return remoteUrl || localUrl!;
+    } else {
+        // Client-side: Use nginx proxy URLs or blob URLs
+        console.log(`Client-side rendering: Using ${remoteUrl || localUrl}`);
+        return remoteUrl || localUrl!;
     }
-    if (localUrl && localUrl.startsWith('blob:')) {
-        console.warn(`Cannot use blob URL for server-side rendering: ${localUrl}`);
-        console.warn(`Remote URL should be used instead: ${remoteUrl}`);
-    }
-    return remoteUrl || localUrl!;
 };
 
 export function TimelineComposition({ timelineData }: TimelineCompositionProps) {
