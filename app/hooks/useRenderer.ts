@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react"
 import axios from "axios"
 import { type TimelineDataItem, type TimelineState, FPS } from "~/components/timeline/types"
+import { buildApiUrl } from "~/config/api"
 
 export const useRenderer = () => {
   const [isRendering, setIsRendering] = useState(false)
@@ -55,7 +56,7 @@ export const useRenderer = () => {
 
       setRenderStatus("Sending data to render server...")
 
-      const response = await axios.post('http://localhost:8000/render', {
+      const response = await axios.post(buildApiUrl('render'), {
         timelineData: timelineData,
         compositionWidth: compositionWidth,
         compositionHeight: compositionHeight,

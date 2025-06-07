@@ -83,6 +83,26 @@ const upload = multer({
   }
 });
 
+// Serve static media files
+app.get('/media/:filename', (req: Request, res: Response): void => {
+  try {
+    const filename = req.params.filename;
+    const filePath = path.resolve('out', filename);
+    
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+      res.status(404).json({ error: 'File not found' });
+      return;
+    }
+    
+    // Send the file
+    res.sendFile(filePath);
+  } catch (error) {
+    console.error('Error serving media file:', error);
+    res.status(500).json({ error: 'Failed to serve file' });
+  }
+});
+
 // List files in out/ directory
 app.get('/media', (req: Request, res: Response): void => {
   try {
@@ -97,7 +117,7 @@ app.get('/media', (req: Request, res: Response): void => {
       const stats = fs.statSync(filePath);
       return {
         name: filename,
-        url: `/media/${encodeURIComponent(filename)}`,
+        url: `/api/media/${encodeURIComponent(filename)}`,
         size: stats.size,
         modified: stats.mtime,
         isDirectory: stats.isDirectory()
@@ -119,8 +139,8 @@ app.post('/upload', upload.single('media'), (req: Request, res: Response): void 
       return;
     }
 
-    const fileUrl = `/media/${encodeURIComponent(req.file.filename)}`;
-    const fullUrl = `http://localhost:${port}${fileUrl}`;
+    const fileUrl = `/api/media/${encodeURIComponent(req.file.filename)}`;
+    const fullUrl = fileUrl; // Use relative URL for nginx proxy
 
     console.log(`📁 File uploaded: ${req.file.originalname} -> ${req.file.filename}`);
 
@@ -150,8 +170,8 @@ app.post('/upload-multiple', upload.array('media', 10), (req: Request, res: Resp
     const uploadedFiles = (req.files as Express.Multer.File[]).map(file => ({
       filename: file.filename,
       originalName: file.originalname,
-      url: `/media/${encodeURIComponent(file.filename)}`,
-      fullUrl: `http://localhost:${port}/media/${encodeURIComponent(file.filename)}`,
+      url: `/api/media/${encodeURIComponent(file.filename)}`,
+      fullUrl: `/api/media/${encodeURIComponent(file.filename)}`,
       size: file.size,
       path: file.path
     }));

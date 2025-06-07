@@ -1,13 +1,25 @@
 services:
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    container_name: videoeditor-nginx
+    ports:
+      - "80:80"
+    networks:
+      - videoeditor-network
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+
   frontend:
     build:
       context: .
       dockerfile: Dockerfile.frontend
     container_name: videoeditor-frontend
-    ports:
-      - "3000:3000"
     environment:
-      - VITE_API_URL=http://backend:8000
+      - VITE_API_URL=/api
     networks:
       - videoeditor-network
     depends_on:
@@ -18,8 +30,6 @@ services:
       context: .
       dockerfile: Dockerfile.backend
     container_name: videoeditor-backend
-    ports:
-      - "8000:8000"
     volumes:
       - ./out:/app/out
     networks:
